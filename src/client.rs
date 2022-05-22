@@ -1,7 +1,6 @@
 // Last.fm scrobble API 2.0 client
 use std::collections::HashMap;
 use std::fmt;
-use ureq;
 
 use crate::auth::Credentials;
 use crate::models::responses::{
@@ -30,18 +29,13 @@ impl fmt::Display for ApiOperation {
 
 pub struct LastFm {
     auth: Credentials,
-    http_client: ureq::Agent,
 }
 
 impl LastFm {
     pub fn new(api_key: &str, api_secret: &str) -> Self {
         let partial_auth = Credentials::new_partial(api_key, api_secret);
-        let http_client = ureq::agent();
 
-        Self {
-            auth: partial_auth,
-            http_client,
-        }
+        Self { auth: partial_auth }
     }
 
     pub fn set_user_credentials(&mut self, username: &str, password: &str) {
@@ -160,26 +154,16 @@ impl LastFm {
         operation: &ApiOperation,
         params: HashMap<String, String>,
     ) -> Result<String, String> {
-        let resp = self
-            .send_request(&operation, params)
-            .map_err(|err| err.to_string())?;
-
-        if resp.error() {
-            return Err(format!("Non Success status ({})", resp.status()));
-        }
-
-        let resp_body = resp
-            .into_string()
-            .map_err(|_| "Failed to read response body".to_string())?;
-
-        Ok(resp_body)
+        self.send_request(&operation, params)?
+            .text()
+            .map_err(|_| "Failed to read response body".to_string())
     }
 
     fn send_request(
         &self,
         operation: &ApiOperation,
         mut params: HashMap<String, String>,
-    ) -> Result<ureq::Response, String> {
+    ) -> Result<attohttpc::Response, String> {
         #[cfg(not(test))]
         let url = "https://ws.audioscrobbler.com/2.0/?format=json";
         #[cfg(test)]
@@ -190,16 +174,11 @@ impl LastFm {
         params.insert("method".to_string(), operation.to_string());
         params.insert("api_sig".to_string(), signature);
 
-        let params: Vec<(&str, &str)> = params
-            .iter()
-            .map(|(k, v)| (k.as_str(), v.as_str()))
-            .collect();
-
-        let resp = self.http_client.post(url).send_form(&params[..]);
-        match resp.synthetic_error() {
-            None => Ok(resp),
-            Some(e) => Err(e.to_string()),
-        }
+        attohttpc::post(url)
+            .params(params)
+            .send()
+            .and_then(|resp| resp.error_for_status())
+            .map_err(|err| err.to_string())
     }
 }
 
