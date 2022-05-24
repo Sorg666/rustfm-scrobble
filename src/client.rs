@@ -175,7 +175,8 @@ impl LastFm {
         params.insert("api_sig".to_string(), signature);
 
         attohttpc::post(url)
-            .params(params)
+            .form(&params)
+            .map_err(|err| err.to_string())?
             .send()
             .and_then(|resp| resp.error_for_status())
             .map_err(|err| err.to_string())
