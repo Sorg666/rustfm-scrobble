@@ -1,9 +1,9 @@
 [package]
-name = "rustfm-scrobble"
-version = "1.1.1"
+name = "rustfm-scrobble-proxy"
+version = "1.1.2"
 authors = ["David Futcher <david@futcher.io>"]
-description = "Last.fm Scrobble crate for Rust"
-repository = "https://github.com/bobbo/rustfm-scrobble"
+description = "Fork of rustfm-scrobble, a Last.fm Scrobble crate, adding proxy support"
+repository = "https://github.com/InputUsername/rustfm-scrobble-proxy"
 keywords = ["lastfm", "last-fm", "scrobble", "api"]
 license = "MIT"
 readme = "README.md"

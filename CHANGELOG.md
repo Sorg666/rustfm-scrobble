@@ -1,3 +1,9 @@
+Version 1.1.2 - 2022-07-19
+========================
+
+  * Replace `ureq` HTTP client with `attohttpc`, enabling
+    the use of rustfm-scrobble behind a proxy
+
 Version 1.1.1 - 2020-12-13
 ========================
 

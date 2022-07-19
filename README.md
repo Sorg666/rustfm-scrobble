@@ -1,8 +1,17 @@
-rustfm-scrobble
+rustfm-scrobble-proxy
 ===============
 
-[![Latest Version](https://img.shields.io/crates/v/rustfm-scrobble.svg)](https://crates.io/crates/rustfm-scrobble)
-[![Rust](https://github.com/bobbo/rustfm-scrobble/workflows/Rust/badge.svg?branch=master&event=push)](https://github.com/bobbo/rustfm-scrobble/actions)
+[![Latest Version](https://img.shields.io/crates/v/rustfm-scrobble-proxy.svg)](https://crates.io/crates/rustfm-scrobble-proxy)
+
+---
+
+*rustfm-scrobble-proxy* is a fork of [rustfm-scrobble](https://github.com/dmfutcher/rustfm-scrobble).
+Its API is identical, but it replaces the internal [ureq](https://crates.io/crates/ureq) HTTP client with [attohttpc](https://crates.io/crates/attohttpc).
+This allows the library to be used behind a proxy seamlessly, as attohttpc picks up proxy settings automatically, unlike ureq.
+
+rustfm-scrobble is licensed under the MIT license. See the [`LICENSE`](https://github.com/InputUsername/rustfm-scrobble-proxy) file for more information. Below is the original README.
+
+---
 
 *rustfm-scrobble* is a [Last.fm Scrobble API 2.0](http://www.last.fm/api/scrobbling) crate for Rust. It allows easy 
 acccess to the "scrobble" and "now playing" notification endpoints through a simple Rust API. It can be used to record
