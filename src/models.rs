@@ -1,6 +1,8 @@
 pub mod responses {
 
+    use core::slice::Iter;
     use std::fmt;
+    use std::vec::IntoIter;
 
     use serde::Deserialize;
     use serde_json as json;
@@ -61,9 +63,7 @@ pub mod responses {
     /// metadata corrections the Last.fm API made to the arist/track/album submitted.
     /// 
     /// [Scrobble Request API Documentation](https://www.last.fm/api/show/track.scrobble)
-    #[derive(Deserialize, Debug, WrappedVec)]
-    #[CollectionName = "ScrobbleList"]
-    #[CollectionDerives = "Debug, Deserialize"]
+    #[derive(Deserialize, Debug)]
     pub struct ScrobbleResponse {
         pub artist: CorrectableString,
         pub album: CorrectableString,
@@ -154,11 +154,74 @@ pub mod responses {
             write!(f, "{}", self.text)
         }
     }
+
+    /// A collection of ScrobbleResponses
+    #[derive(Debug, Deserialize)]
+    pub struct ScrobbleList(Vec<ScrobbleResponse>);
+
+    impl FromIterator<ScrobbleResponse> for ScrobbleList {
+        fn from_iter<I: IntoIterator<Item = ScrobbleResponse>>(iter: I) -> Self {
+            let mut inner = Vec::new();
+            inner.extend(iter);
+            ScrobbleList(inner)
+        }
+    }
+
+    impl From<Vec<ScrobbleResponse>> for ScrobbleList {
+        fn from(ids: Vec<ScrobbleResponse>) -> ScrobbleList {
+            let mut new = ScrobbleList::new();
+            new.extend(ids);
+            new
+        }
+    }
+
+    impl IntoIterator for ScrobbleList {
+        type Item = ScrobbleResponse;
+        type IntoIter = IntoIter<ScrobbleResponse>;
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.into_iter()
+        }
+    }
+
+    impl<'a> IntoIterator for &'a ScrobbleList {
+        type Item = &'a ScrobbleResponse;
+        type IntoIter = Iter<'a, ScrobbleResponse>;
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.iter()
+        }
+    }
+
+    impl Extend<ScrobbleResponse> for ScrobbleList {
+        fn extend<T: IntoIterator<Item = ScrobbleResponse>>(&mut self, iter: T) {
+            self.0.extend(iter);
+        }
+    }
+
+    impl ScrobbleList {
+        /// Creates a new, empty ScrobbleList
+        pub fn new() -> ScrobbleList {
+            ScrobbleList(Vec::new())
+        }
+        /// Returns true if the ScrobbleList contains no ScrobbleResponses
+        pub fn is_empty(&self) -> bool {
+            self.0.is_empty()
+        }
+        /// Returns the number of ScrobbleResponses in the ScrobbleList
+        pub fn len(&self) -> usize {
+            self.0.len()
+        }
+        /// Returns an iterator over the ScrobbleList
+        pub fn iter<'a>(&'a self) -> Iter<'a, ScrobbleResponse> {
+            self.into_iter()
+        }
+    }
 }
 
 pub mod metadata {
 
+    use core::slice::Iter;
     use std::collections::HashMap;
+    use std::vec::IntoIter;
 
     /// Repesents a single music track played at a point in time. In the Last.fm universe, this is known as a 
     /// "scrobble".
@@ -170,10 +233,7 @@ pub mod metadata {
     /// [`Scrobbler::now_playing`]: struct.Scrobbler.html#method.now_playing
     /// [`Scrobbler::scrobble`]: struct.Scrobbler.html#method.scrobble
     /// [`Scrobbler::scrobble_batch`]: struct.Scrobbler.html#method.scrobble_batch
-    #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, WrappedVec)]
-    #[CollectionName = "ScrobbleBatch"]
-    #[CollectionDoc = "A batch of Scrobbles to be submitted to Last.fm together."]
-    #[CollectionDerives = "Clone, Debug"]
+    #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct Scrobble {
         artist: String,
         track: String,
@@ -304,12 +364,73 @@ pub mod metadata {
     /// Designed to make it easier to cooperate with other track info types.
     impl From<Vec<(String, String, String)>> for ScrobbleBatch {
         fn from(collection: Vec<(String, String, String)>) -> Self {
-            let scrobbles: Vec<Scrobble> = collection
-                                .iter()
-                                .map(Scrobble::from)
-                                .collect();
+            let scrobbles: Vec<Scrobble> = collection.iter().map(Scrobble::from).collect();
 
             ScrobbleBatch::from(scrobbles)
+        }
+    }
+
+    /// A batch of Scrobbles to be submitted to Last.fm together.
+    #[derive(Clone, Debug)]
+    pub struct ScrobbleBatch(Vec<Scrobble>);
+
+    impl FromIterator<Scrobble> for ScrobbleBatch {
+        fn from_iter<I: IntoIterator<Item = Scrobble>>(iter: I) -> Self {
+            let mut inner = Vec::new();
+            inner.extend(iter);
+            ScrobbleBatch(inner)
+        }
+    }
+
+    impl From<Vec<Scrobble>> for ScrobbleBatch {
+        fn from(ids: Vec<Scrobble>) -> ScrobbleBatch {
+            let mut new = ScrobbleBatch::new();
+            new.extend(ids);
+            new
+        }
+    }
+
+    impl IntoIterator for ScrobbleBatch {
+        type Item = Scrobble;
+        type IntoIter = IntoIter<Scrobble>;
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.into_iter()
+        }
+    }
+
+    impl<'a> IntoIterator for &'a ScrobbleBatch {
+        type Item = &'a Scrobble;
+        type IntoIter = Iter<'a, Scrobble>;
+        fn into_iter(self) -> Self::IntoIter {
+            self.0.iter()
+        }
+    }
+
+    impl Extend<Scrobble> for ScrobbleBatch {
+        fn extend<T: IntoIterator<Item = Scrobble>>(&mut self, iter: T) {
+            self.0.extend(iter);
+        }
+    }
+
+    impl ScrobbleBatch {
+        /// Creates a new, empty ScrobbleBatch
+        pub fn new() -> ScrobbleBatch {
+            ScrobbleBatch(Vec::new())
+        }
+
+        /// Returns true if the ScrobbleBatch contains no Scrobbles
+        pub fn is_empty(&self) -> bool {
+            self.0.is_empty()
+        }
+
+        /// Returns the number of Scrobbles in the ScrobbleBatch
+        pub fn len(&self) -> usize {
+            self.0.len()
+        }
+
+        /// Returns an iterator over the ScrobbleBatch
+        pub fn iter<'a>(&'a self) -> Iter<'a, Scrobble> {
+            self.into_iter()
         }
     }
 
