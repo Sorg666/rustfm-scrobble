@@ -164,10 +164,6 @@ impl LastFm {
             .send_request(&operation, params)
             .map_err(|err| err.to_string())?;
 
-        if resp.error() {
-            return Err(format!("Non Success status ({})", resp.status()));
-        }
-
         let resp_body = resp
             .into_string()
             .map_err(|_| "Failed to read response body".to_string())?;
@@ -195,11 +191,9 @@ impl LastFm {
             .map(|(k, v)| (k.as_str(), v.as_str()))
             .collect();
 
-        let resp = self.http_client.post(url).send_form(&params[..]);
-        match resp.synthetic_error() {
-            None => Ok(resp),
-            Some(e) => Err(e.to_string()),
-        }
+        return self.http_client.post(url)
+            .send_form(&params[..])
+            .map_err(|err| err.to_string())
     }
 }
 
