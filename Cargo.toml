@@ -17,4 +17,4 @@ serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 
 [dev-dependencies]
-mockito = "0.28"
+mockito = "0.32.5"
