@@ -211,7 +211,7 @@ pub mod responses {
             self.0.len()
         }
         /// Returns an iterator over the ScrobbleList
-        pub fn iter<'a>(&'a self) -> Iter<'a, ScrobbleResponse> {
+        pub fn iter(&self) -> Iter<ScrobbleResponse> {
             self.into_iter()
         }
     }
@@ -429,7 +429,7 @@ pub mod metadata {
         }
 
         /// Returns an iterator over the ScrobbleBatch
-        pub fn iter<'a>(&'a self) -> Iter<'a, Scrobble> {
+        pub fn iter(&self) -> Iter<Scrobble> {
             self.into_iter()
         }
     }
