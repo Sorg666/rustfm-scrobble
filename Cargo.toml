@@ -12,9 +12,9 @@ edition = "2021"
 
 [dependencies]
 ureq = "^1"
-md5 = "0.7"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+md5 = "0.7.0"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
 
 [dev-dependencies]
 mockito = "0.28"
