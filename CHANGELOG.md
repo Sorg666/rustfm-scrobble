@@ -1,3 +1,15 @@
+Version 2.0.0 - 2024-09-30
+========================
+
+  * Make album field optional for scrobble
+  * Remove `wrapped-vec` dependency
+  * Use latest versions of serde
+  * Update `mockito` dev-dependency to v0.32.5
+  * Migrate to v2 of `ureq` HTTP client
+  * Add `Scrobble::new_with_timestamp` convenience constructor
+  * Send custom user agent with requests
+
+
 Version 1.1.1 - 2020-12-13
 ========================
 
