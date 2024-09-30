@@ -37,7 +37,7 @@ impl LastFm {
     pub fn new(api_key: &str, api_secret: &str) -> Self {
         let partial_auth = Credentials::new_partial(api_key, api_secret);
         let http_client = AgentBuilder::new()
-            .user_agent(&format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")))
+            .user_agent(&format!("{}-fork/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")))
             .build();
 
         Self {
