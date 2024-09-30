@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use std::fmt;
 use ureq;
-
+use ureq::AgentBuilder;
 use crate::auth::Credentials;
 use crate::models::responses::{
     AuthResponse, BatchScrobbleResponse, BatchScrobbleResponseWrapper, NowPlayingResponse,
@@ -36,7 +36,9 @@ pub struct LastFm {
 impl LastFm {
     pub fn new(api_key: &str, api_secret: &str) -> Self {
         let partial_auth = Credentials::new_partial(api_key, api_secret);
-        let http_client = ureq::agent();
+        let http_client = AgentBuilder::new()
+            .user_agent(&format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")))
+            .build();
 
         Self {
             auth: partial_auth,
