@@ -263,6 +263,25 @@ pub mod metadata {
             }
         }
 
+        /// Constructs a new Scrobble instance, representing a single playthrough of a music track. `Scrobble`s are 
+        /// submitted to Last.fm via an instance of [`Scrobbler`]. A new `Scrobble` requires an artist name and song/track
+        /// name, and an optional album name. This function also requires a timestamp (date/time of play) of a Scrobble.
+        ///
+        /// # Example
+        /// ```ignore
+        /// let scrobble = Scrobble::new("Example Artist", "Example Track", Some("Example Album"), 12345);
+        /// ```
+        ///
+        /// [`Scrobbler`]: struct.Scrobbler.html
+        pub fn new_with_timestamp(artist: &str, track: &str, album: Option<&str>, timestamp: u64) -> Self {
+            Self {
+                artist: artist.to_owned(),
+                track: track.to_owned(),
+                album: album.map(ToOwned::to_owned),
+                timestamp: Some(timestamp),
+            }
+        }
+
         /// Sets the timestamp (date/time of play) of a Scrobble. Used in a builder-style pattern, typically after 
         /// [`Scrobble::new`].
         /// 
