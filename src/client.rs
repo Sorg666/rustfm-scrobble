@@ -1,8 +1,10 @@
 // Last.fm scrobble API 2.0 client
 use std::collections::HashMap;
+use std::error::Error;
+use std::io::Error as IoError;
+use std::io::ErrorKind;
 use std::fmt;
-use ureq;
-use ureq::AgentBuilder;
+use ureq::{AgentBuilder, Response, Error as UreqError, Agent};
 use crate::auth::Credentials;
 use crate::models::responses::{
     AuthResponse, BatchScrobbleResponse, BatchScrobbleResponseWrapper, NowPlayingResponse,
@@ -30,7 +32,7 @@ impl fmt::Display for ApiOperation {
 
 pub struct LastFm {
     auth: Credentials,
-    http_client: ureq::Agent,
+    http_client: Agent,
 }
 
 impl LastFm {
@@ -162,9 +164,7 @@ impl LastFm {
         operation: &ApiOperation,
         params: HashMap<String, String>,
     ) -> Result<String, String> {
-        let resp = self
-            .send_request(&operation, params)
-            .map_err(|err| err.to_string())?;
+        let resp = self.send_request(&operation, params)?;
 
         let resp_body = resp
             .into_string()
@@ -177,7 +177,7 @@ impl LastFm {
         &self,
         operation: &ApiOperation,
         mut params: HashMap<String, String>,
-    ) -> Result<ureq::Response, String> {
+    ) -> Result<Response, String> {
         #[cfg(not(test))]
         let url = "https://ws.audioscrobbler.com/2.0/?format=json";
         #[cfg(test)]
@@ -193,9 +193,36 @@ impl LastFm {
             .map(|(k, v)| (k.as_str(), v.as_str()))
             .collect();
 
-        return self.http_client.post(url)
-            .send_form(&params[..])
-            .map_err(|err| err.to_string())
+        return with_retry(&self.http_client, |http_client| {
+            http_client.post(url).send_form(&params)
+        }).map_err(|err| err.to_string())
+    }
+}
+
+fn with_retry(
+    agent: &Agent,
+    do_request: impl Fn(&Agent) -> Result<Response, UreqError>
+) -> Result<Response, UreqError> {
+    let result = do_request(agent);
+    if let Err(ref error) = result {
+        if is_connection_abort(error) {
+            return do_request(agent);
+        }
+    }
+    return result
+}
+
+fn is_connection_abort(error: &UreqError) -> bool {
+    return match error {
+        UreqError::Transport(transport) => {
+            transport.source().map_or(false, |source| {
+                source.downcast_ref::<IoError>().map_or(false, |io_error| match io_error.kind() {
+                    ErrorKind::ConnectionAborted => true,
+                    _ => false
+                })
+            })
+        }
+        _ => false
     }
 }
 
