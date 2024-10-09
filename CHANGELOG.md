@@ -1,3 +1,9 @@
+Version 2.0.1 - 2024-10-10
+========================
+
+* Retry request one more time if encountered ConnectionAborted error
+
+
 Version 2.0.0 - 2024-09-30
 ========================
 
